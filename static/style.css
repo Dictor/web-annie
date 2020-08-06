@@ -1,0 +1,6 @@
+.list-group-item p {
+	margin-bottom: 0.2rem;
+}
+.list-group-item .percentage {
+	float: right;
+}
