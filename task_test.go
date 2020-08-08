@@ -1,8 +1,8 @@
 package main
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestParseProgress(t *testing.T) {
@@ -12,7 +12,7 @@ func TestParseProgress(t *testing.T) {
 		" 4.31 MiB / 4.44 MiB [========================================================================================================================================>---]  97.20% 3.58 MiB/s",
 		"Merging video parts into Nature Beautiful short video 720p HD.mp4",
 	}
-	
+
 	for _, input := range TEST_INPUT {
 		task := &Task{rawProgress: input}
 		task.ParseProgress()

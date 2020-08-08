@@ -4,17 +4,22 @@ import (
 	elogrus "github.com/dictor/echologrus"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 var (
-	Tasks map[int]*Task = map[int]*Task{}
-	TaskId int = 0
+	Tasks         map[int]*Task = map[int]*Task{}
+	TaskId        int           = 0
+	Logger        elogrus.EchoLogger
+	CurrentConfig *Config
 )
 
 type CustomValidator struct {
-		validator *validator.Validate
-	}
+	validator *validator.Validate
+}
 
 func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.validator.Struct(i)
@@ -22,9 +27,32 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 
 func main() {
 	e := echo.New()
-	elogrus.Attach(e)
+	Logger = elogrus.Attach(e)
 	e.Validator = &CustomValidator{validator: validator.New()}
-	
+
+	successConfig := false
+	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
+		Logger.Warnln("Cannot found config file 'config.yaml'")
+	} else {
+		rawYaml, err := ioutil.ReadFile("config.yaml")
+		if err != nil {
+			Logger.Errorf("Error is caused while reading config : %s\n", err)
+		}
+		rawConfig := Config{}
+		if err := yaml.Unmarshal(rawYaml, &rawConfig); err != nil {
+			Logger.Errorf("Error is caused while decode config : %s\n", err)
+		}
+		CurrentConfig = &rawConfig
+		successConfig = true
+	}
+	if !successConfig {
+		Logger.Warnln("Using default config")
+		CurrentConfig = &DefaultConfig
+	}
+	if _, err := os.Stat(CurrentConfig.DownloadDirectory); os.IsNotExist(err) {
+		os.MkdirAll(CurrentConfig.DownloadDirectory, 0775)
+	}
+
 	e.File("/", "static/index.html")
 	e.File("/style", "static/style.css")
 	e.File("/script", "static/script.js")
@@ -41,12 +69,12 @@ func main() {
 			e.Logger.Info(err)
 			return c.NoContent(http.StatusBadRequest)
 		}
-		
+
 		Tasks[TaskId] = NewTask(task.Address)
 		Tasks[TaskId].Start()
 		TaskId += 1
 		return c.NoContent(http.StatusOK)
 	})
-	
+
 	e.Logger.Fatal(e.Start(":80"))
 }

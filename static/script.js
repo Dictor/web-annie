@@ -16,7 +16,7 @@ window.onload = function () {
 			Tasks = [];
 			let i = 0;
 			for (let id in t) {
-				//Tasks.push(t[id]);
+				App.tasks = []
 				Vue.set(App.tasks, i, t[id]);
 				i++;
 			}

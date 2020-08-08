@@ -1,11 +1,12 @@
 package main
 
 import (
-	"bufio" 
+	"bufio"
 	"fmt"
+	"os"
 	"os/exec"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 type TaskStatus int
@@ -18,13 +19,13 @@ const (
 )
 
 type Task struct {
-	Name string `json:"name"`
-	Address  string `json:"address"`
-	Status   TaskStatus `json:"status"`
-	Info     string `json:"info"`
-	rawProgress string 
-	Progress *TaskProgress `json:"progress"`
-	fullLog  string
+	Name        string     `json:"name"`
+	Address     string     `json:"address"`
+	Status      TaskStatus `json:"status"`
+	Info        string     `json:"info"`
+	rawProgress string
+	Progress    *TaskProgress `json:"progress"`
+	fullLog     string
 }
 
 type TaskProgress struct {
@@ -49,7 +50,13 @@ func (t *Task) Start() {
 			linenum int
 		)
 
-		cmd := exec.Command("./annie", t.Address)
+		cmd := exec.Command("./annie", "-o", CurrentConfig.DownloadDirectory, t.Address)
+		if CurrentConfig.HttpProxy {
+			cmd.Env = append(
+				os.Environ(),
+				"HTTP_PROXY="+CurrentConfig.HttpProxyAddress,
+			)
+		}
 		std, _ := cmd.StdoutPipe()
 		if err := cmd.Start(); err != nil {
 			t.fullLog += fmt.Sprintf("\n%s", err)
@@ -79,40 +86,40 @@ func (t *Task) Start() {
 	}()
 }
 
-func(t *Task) ParseProgress() {
+func (t *Task) ParseProgress() {
 	//pre processing
 	rawProgress := strings.Trim(t.rawProgress, " ")
 	re := regexp.MustCompile("[-=>]")
 	rawProgress = string(re.ReplaceAll([]byte(rawProgress), []byte("")))
 	raw := strings.Split(rawProgress, " ")
 	tp := TaskProgress{}
-	
+
 	var (
-		slashAppear bool = false
-		digitReg *regexp.Regexp = regexp.MustCompile("[0-9]+")
+		slashAppear bool           = false
+		digitReg    *regexp.Regexp = regexp.MustCompile("[0-9]+")
 	)
 	for i := 0; i < len(raw); i++ {
 		if strings.Contains(raw[i], "/s") {
-			if len(digitReg.FindAllString(raw[i - 1], -1)) > 0 { 
-				tp.Speed = raw[i - 1] + " " + raw[i]
+			if len(digitReg.FindAllString(raw[i-1], -1)) > 0 {
+				tp.Speed = raw[i-1] + " " + raw[i]
 			}
 		} else if strings.ContainsAny(raw[i], "hms") {
-			if len(digitReg.FindAllString(raw[i], -1)) > 0 && !strings.Contains(raw[i], "\n") && len(raw[i]) < 12 { 
+			if len(digitReg.FindAllString(raw[i], -1)) > 0 && !strings.Contains(raw[i], "\n") && len(raw[i]) < 12 {
 				tp.TimeLeft = raw[i]
 			}
 		} else if strings.Contains(raw[i], "B") {
 			if slashAppear {
-				if len(digitReg.FindAllString(raw[i - 1], -1)) > 0 { 
-					tp.Total = raw[i - 1] + " " + raw[i]
+				if len(digitReg.FindAllString(raw[i-1], -1)) > 0 {
+					tp.Total = raw[i-1] + " " + raw[i]
 				}
 			} else {
-				if len(digitReg.FindAllString(raw[i - 1], -1)) > 0 { 
+				if len(digitReg.FindAllString(raw[i-1], -1)) > 0 {
 					slashAppear = true
-					tp.Current = raw[i - 1] + " " + raw[i]
+					tp.Current = raw[i-1] + " " + raw[i]
 				}
 			}
 		} else if strings.Contains(raw[i], "%") {
-			if len(digitReg.FindAllString(raw[i], -1)) > 0 { 
+			if len(digitReg.FindAllString(raw[i], -1)) > 0 {
 				tp.Percentage = raw[i]
 			}
 		}
