@@ -97,7 +97,7 @@ func(t *Task) ParseProgress() {
 				tp.Speed = raw[i - 1] + " " + raw[i]
 			}
 		} else if strings.ContainsAny(raw[i], "hms") {
-			if len(digitReg.FindAllString(raw[i], -1)) > 0 { 
+			if len(digitReg.FindAllString(raw[i], -1)) > 0 && !strings.Contains(raw[i], "\n") && len(raw[i]) < 12 { 
 				tp.TimeLeft = raw[i]
 			}
 		} else if strings.Contains(raw[i], "B") {
