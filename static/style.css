@@ -1,6 +1,59 @@
-.list-group-item p {
-	margin-bottom: 0.2rem;
+body {
+	margin: 10px;
 }
-.list-group-item .percentage {
-	float: right;
+
+#btn-add-task {
+	margin-bottom: 10px;
+}
+
+.list-group-item, .list-group {
+	background-color: rgba(0, 0, 0, 0);
+	z-index: 1;
+	display: inline-flex;
+	width: 100%;
+}
+
+.task-progbar {
+	position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    background-color: #dcf3dd;
+    z-index: -1;
+}
+
+.task-name p {
+	margin-bottom: 0;
+}
+
+.task-name-address {
+	color: lightslategray;
+	font-size: 0.95rem;
+}
+
+.task-name-size {
+	color: gray;
+	font-size: 0.85rem;
+}
+
+.task-progress {
+	width: 80px;
+	margin-left: auto;
+}
+
+.task-progress p {
+	margin-bottom: 0;
+	text-align: center;
+	font-weight: bold;
+}
+
+.task-progress-status {
+	font-size: 1.4rem;
+}
+
+.task-progress-percentage, .task-progress-time {
+	font-size: 0.9rem;
+}
+
+.task-control {
 }
