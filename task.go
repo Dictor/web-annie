@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"regexp"
 )
 
 type TaskStatus int
@@ -64,7 +65,7 @@ func (t *Task) Start() {
 			if linenum == 0 {
 				t.Info = line
 			} else {
-				t.rawProgress = strings.TrimLeft(line, " ")
+				t.rawProgress = line
 				t.ParseProgress()
 			}
 
@@ -78,19 +79,43 @@ func (t *Task) Start() {
 	}()
 }
 
-func (t *Task) ParseProgress() bool {
-	raw := strings.Split(t.rawProgress, " ")
-	if len(raw) < 9 {
-		return false
+func(t *Task) ParseProgress() {
+	//pre processing
+	rawProgress := strings.Trim(t.rawProgress, " ")
+	re := regexp.MustCompile("[-=>]")
+	rawProgress = string(re.ReplaceAll([]byte(rawProgress), []byte("")))
+	raw := strings.Split(rawProgress, " ")
+	tp := TaskProgress{}
+	
+	var (
+		slashAppear bool = false
+		digitReg *regexp.Regexp = regexp.MustCompile("[0-9]+")
+	)
+	for i := 0; i < len(raw); i++ {
+		if strings.Contains(raw[i], "/s") {
+			if len(digitReg.FindAllString(raw[i - 1], -1)) > 0 { 
+				tp.Speed = raw[i - 1] + " " + raw[i]
+			}
+		} else if strings.ContainsAny(raw[i], "hms") {
+			if len(digitReg.FindAllString(raw[i], -1)) > 0 { 
+				tp.TimeLeft = raw[i]
+			}
+		} else if strings.Contains(raw[i], "B") {
+			if slashAppear {
+				if len(digitReg.FindAllString(raw[i - 1], -1)) > 0 { 
+					tp.Total = raw[i - 1] + " " + raw[i]
+				}
+			} else {
+				if len(digitReg.FindAllString(raw[i - 1], -1)) > 0 { 
+					slashAppear = true
+					tp.Current = raw[i - 1] + " " + raw[i]
+				}
+			}
+		} else if strings.Contains(raw[i], "%") {
+			if len(digitReg.FindAllString(raw[i], -1)) > 0 { 
+				tp.Percentage = raw[i]
+			}
+		}
 	}
-	t.Progress = &TaskProgress{
-		Current:    raw[0] + " " + raw[1],
-		Total:      raw[3] + " " + raw[4],
-		Percentage: raw[6],
-		Speed:      raw[7] + " " + raw[8],
-	}
-	if len(raw) >= 10 {
-		t.Progress.TimeLeft = raw[9]
-	}
-	return true
+	t.Progress = &tp
 }
