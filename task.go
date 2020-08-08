@@ -17,6 +17,7 @@ const (
 )
 
 type Task struct {
+	Name string `json:"name"`
 	Address  string `json:"address"`
 	Status   TaskStatus `json:"status"`
 	Info     string `json:"info"`
@@ -30,7 +31,7 @@ type TaskProgress struct {
 	Current    string `json:"current"`
 	Speed      string `json:"speed"`
 	Percentage string `json:"percentage"`
-	TimeLeft   string `json:"time_left`
+	TimeLeft   string `json:"time_left"`
 }
 
 func NewTask(videoAddress string) *Task {
@@ -79,15 +80,17 @@ func (t *Task) Start() {
 
 func (t *Task) ParseProgress() bool {
 	raw := strings.Split(t.rawProgress, " ")
-	if len(raw) < 12 {
+	if len(raw) < 9 {
 		return false
 	}
 	t.Progress = &TaskProgress{
 		Current:    raw[0] + " " + raw[1],
 		Total:      raw[3] + " " + raw[4],
-		Percentage: raw[8],
-		Speed:      raw[9] + " " + raw[10],
-		TimeLeft:   raw[11],
+		Percentage: raw[6],
+		Speed:      raw[7] + " " + raw[8],
+	}
+	if len(raw) >= 10 {
+		t.Progress.TimeLeft = raw[9]
 	}
 	return true
 }
