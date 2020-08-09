@@ -59,7 +59,9 @@ func (t *Task) Start() {
 		}
 		std, _ := cmd.StdoutPipe()
 		if err := cmd.Start(); err != nil {
-			t.fullLog += fmt.Sprintf("\n%s", err)
+			errString := fmt.Sprintf("\n%s", err)
+			t.Info += errString
+			t.fullLog += errString
 			t.Status = TASK_STATUS_FAIL
 			return
 		}
