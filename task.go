@@ -61,6 +61,7 @@ func (t *Task) Start() {
 		if err := cmd.Start(); err != nil {
 			t.fullLog += fmt.Sprintf("\n%s", err)
 			t.Status = TASK_STATUS_FAIL
+			return
 		}
 
 		t.Status = TASK_STATUS_DOWNLOADING
@@ -71,6 +72,7 @@ func (t *Task) Start() {
 
 			if linenum == 0 {
 				t.Info = line
+				t.ParseInfo()
 			} else {
 				t.rawProgress = line
 				t.ParseProgress()
@@ -79,11 +81,29 @@ func (t *Task) Start() {
 			log.WriteString(line)
 			linenum += 1
 		}
-
-		log.WriteString(fmt.Sprintf("\nexited with %s", err))
+	
+		cmd.Wait()
+		exitDetail := fmt.Sprintf("\ntask success? = %t, exit code = %d", cmd.ProcessState.Success(), cmd.ProcessState.ExitCode())
+		log.WriteString(exitDetail)
+		t.Info += exitDetail
+		
+		exitString := fmt.Sprintf("\nexited with %s", err)
+		log.WriteString(exitString)
+		t.Info += exitString
 		t.fullLog = log.String()
 		t.Status = TASK_STATUS_COMPLETE
 	}()
+}
+
+func (t *Task) ParseInfo() {
+	rawInfo := strings.Trim(t.Info, " ")
+	InfoLines := strings.Split(rawInfo, "\n")
+	
+	for _, l := range InfoLines {
+		if strings.Contains(l, "Title") {
+			t.Name = strings.Trim(strings.ReplaceAll(l, "Title:", ""), " ")
+		}
+	}
 }
 
 func (t *Task) ParseProgress() {
