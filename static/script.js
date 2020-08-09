@@ -13,11 +13,10 @@ window.onload = function () {
 	setInterval(function() {
 		axios.get("./tasks").then(function (response) {
 			let t = response.data;
-			Tasks = [];
+			Tasks.splice(0, Tasks.length)
 			let i = 0;
 			for (let id in t) {
-				App.tasks = []
-				Vue.set(App.tasks, i, t[id]);
+				Tasks.push(t[id]);
 				i++;
 			}
 		});
