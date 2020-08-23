@@ -64,6 +64,8 @@ body {
 
 .task-control button {
 	height: 100%;
+	width: 2.5rem;
+    padding: 6px;
 }
 
 @media (max-width: 520px) { 
@@ -73,7 +75,6 @@ body {
 }
 
 #toast-wrapper {
-	
 	position: absolute;
 	width: 500px;
 	bottom: 10px;

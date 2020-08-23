@@ -16,7 +16,7 @@
     <body>
 		<script src="./script"></script>
         <div id="app">
-            <button id="btn-add-task" type="button" class="btn btn-success btn-lg btn-block" onclick="javascript:addTask()">+</button>
+            <button id="btn-add-task" type="button" class="btn btn-success btn-lg btn-block" onclick="javascript:webAnnie.addTask()">+</button>
             <div class="list-group">
                 <a class="list-group-item list-group-item-action" v-for="task in tasks">
 					<div class="task-progbar" v-if="task.progress" v-bind:style="{ width: task.progress.percentage }"></div>
@@ -31,6 +31,7 @@
 						<p class="task-progress-time" v-if="task.progress">{{ task.progress.time_left }} 남음</p>
 					</div>
 					<div class="task-control">
+						<button type="button" class="btn btn-danger" v-on:click="deleteTask(task)"><i class="fas fa-trash-alt"></i></button>
 						<button type="button" class="btn btn-primary" v-on:click="alert(task.info)"><i class="fas fa-info"></i></button>
 					</div>
                 </a>

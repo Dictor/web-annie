@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 var (
@@ -59,7 +60,7 @@ func main() {
 	e.GET("/tasks", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, Tasks)
 	})
-	e.POST("/task", func(c echo.Context) error {
+	e.POST("/tasks", func(c echo.Context) error {
 		task := TaskAddRequest{}
 		if err := c.Bind(&task); err != nil {
 			e.Logger.Info(err)
@@ -75,6 +76,20 @@ func main() {
 		TaskId += 1
 		return c.NoContent(http.StatusOK)
 	})
-
+	e.DELETE("/tasks/:id", func(c echo.Context) error {
+		reqId, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			e.Logger.Info(err)
+			return c.NoContent(http.StatusBadRequest)
+		}
+		
+		if target, exist := Tasks[reqId]; !exist {
+			return c.NoContent(http.StatusNotFound)
+		} else {
+			target.Stop()
+			delete(Tasks, reqId)
+			return c.NoContent(http.StatusOK)
+		}
+	})
 	e.Logger.Fatal(e.Start(":80"))
 }

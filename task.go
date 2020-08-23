@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"context"
 )
 
 type TaskStatus int
@@ -16,6 +17,7 @@ const (
 	TASK_STATUS_DOWNLOADING
 	TASK_STATUS_COMPLETE
 	TASK_STATUS_FAIL
+	TASK_STATUS_CANCEL
 )
 
 type Task struct {
@@ -26,6 +28,8 @@ type Task struct {
 	rawProgress string
 	Progress    *TaskProgress `json:"progress"`
 	fullLog     string
+	context		context.Context
+	cancel		context.CancelFunc
 }
 
 type TaskProgress struct {
@@ -37,7 +41,8 @@ type TaskProgress struct {
 }
 
 func NewTask(videoAddress string) *Task {
-	return &Task{Address: videoAddress}
+	ctx, can := context.WithCancel(context.Background())
+	return &Task{Address: videoAddress, context: ctx, cancel: can}
 }
 
 func (t *Task) Start() {
@@ -49,6 +54,10 @@ func (t *Task) Start() {
 			buf     []byte
 			linenum int
 		)
+		
+		defer func() {
+			t.fullLog = log.String()
+		}()
 
 		cmd := exec.Command("./annie", "-o", CurrentConfig.DownloadDirectory, t.Address)
 		if CurrentConfig.HttpProxy {
@@ -69,6 +78,14 @@ func (t *Task) Start() {
 		t.Status = TASK_STATUS_DOWNLOADING
 		reader := bufio.NewReader(std)
 		for err == nil {
+			select {
+				case <-t.context.Done():
+					log.WriteString("\nexit because context canceled")
+					t.Status = TASK_STATUS_CANCEL
+					return
+				default:
+			}
+			
 			buf, err = reader.ReadBytes(13)
 			line = string(buf)
 
@@ -92,9 +109,15 @@ func (t *Task) Start() {
 		exitString := fmt.Sprintf("\nexited with %s", err)
 		log.WriteString(exitString)
 		t.Info += exitString
-		t.fullLog = log.String()
+		
 		t.Status = TASK_STATUS_COMPLETE
 	}()
+}
+
+func (t *Task) Stop() {
+	if t.cancel != nil {
+		t.cancel()
+	}
 }
 
 func (t *Task) ParseInfo() {
