@@ -16,7 +16,8 @@
     <body>
 		<script src="./script"></script>
         <div id="app">
-            <button id="btn-add-task" type="button" class="btn btn-success btn-lg btn-block" onclick="javascript:webAnnie.addTask()">+</button>
+            <button id="btn-add-task" type="button" class="btn btn-success btn-lg" onclick="javascript:webAnnie.addTask()">+</button>
+			<button id="btn-delete-task" type="button" class="btn btn-danger btn-lg" onclick="javascript:webAnnie.deleteCompleteTask()"><i class="fas fa-broom"></i></button>
             <div class="list-group">
                 <a class="list-group-item list-group-item-action" v-for="task in tasks">
 					<div class="task-progbar" v-if="task.progress" v-bind:style="{ width: task.progress.percentage }"></div>

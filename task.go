@@ -2,12 +2,12 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
-	"context"
 )
 
 type TaskStatus int
@@ -28,8 +28,8 @@ type Task struct {
 	rawProgress string
 	Progress    *TaskProgress `json:"progress"`
 	fullLog     string
-	context		context.Context
-	cancel		context.CancelFunc
+	context     context.Context
+	cancel      context.CancelFunc
 }
 
 type TaskProgress struct {
@@ -54,7 +54,7 @@ func (t *Task) Start() {
 			buf     []byte
 			linenum int
 		)
-		
+
 		defer func() {
 			t.fullLog = log.String()
 		}()
@@ -79,13 +79,13 @@ func (t *Task) Start() {
 		reader := bufio.NewReader(std)
 		for err == nil {
 			select {
-				case <-t.context.Done():
-					log.WriteString("\nexit because context canceled")
-					t.Status = TASK_STATUS_CANCEL
-					return
-				default:
+			case <-t.context.Done():
+				log.WriteString("\nexit because context canceled")
+				t.Status = TASK_STATUS_CANCEL
+				return
+			default:
 			}
-			
+
 			buf, err = reader.ReadBytes(13)
 			line = string(buf)
 
@@ -100,16 +100,16 @@ func (t *Task) Start() {
 			log.WriteString(line)
 			linenum += 1
 		}
-	
+
 		cmd.Wait()
 		exitDetail := fmt.Sprintf("\ntask success? = %t, exit code = %d", cmd.ProcessState.Success(), cmd.ProcessState.ExitCode())
 		log.WriteString(exitDetail)
 		t.Info += exitDetail
-		
+
 		exitString := fmt.Sprintf("\nexited with %s", err)
 		log.WriteString(exitString)
 		t.Info += exitString
-		
+
 		t.Status = TASK_STATUS_COMPLETE
 	}()
 }
@@ -123,7 +123,7 @@ func (t *Task) Stop() {
 func (t *Task) ParseInfo() {
 	rawInfo := strings.Trim(t.Info, " ")
 	InfoLines := strings.Split(rawInfo, "\n")
-	
+
 	for _, l := range InfoLines {
 		if strings.Contains(l, "Title") {
 			t.Name = strings.Trim(strings.ReplaceAll(l, "Title:", ""), " ")

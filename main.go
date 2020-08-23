@@ -77,18 +77,31 @@ func main() {
 		return c.NoContent(http.StatusOK)
 	})
 	e.DELETE("/tasks/:id", func(c echo.Context) error {
-		reqId, err := strconv.Atoi(c.Param("id"))
-		if err != nil {
-			e.Logger.Info(err)
-			return c.NoContent(http.StatusBadRequest)
-		}
-		
-		if target, exist := Tasks[reqId]; !exist {
-			return c.NoContent(http.StatusNotFound)
+		reqId := c.Param("id")
+		if reqId != "complete" {
+			id, err := strconv.Atoi(reqId)
+			if err != nil {
+				e.Logger.Info(err)
+				return c.NoContent(http.StatusBadRequest)
+			}
+
+			if target, exist := Tasks[id]; !exist {
+				return c.NoContent(http.StatusNotFound)
+			} else {
+				target.Stop()
+				delete(Tasks, id)
+				return c.NoContent(http.StatusOK)
+			}
 		} else {
-			target.Stop()
-			delete(Tasks, reqId)
-			return c.NoContent(http.StatusOK)
+			deleteCnt := 0
+			for i, task := range Tasks {
+				if task.Status == TASK_STATUS_COMPLETE {
+					task.Stop()
+					delete(Tasks, i)
+					deleteCnt += 1
+				}
+			}
+			return c.JSON(http.StatusOK, map[string]int{"count": deleteCnt})
 		}
 	})
 	e.Logger.Fatal(e.Start(":80"))

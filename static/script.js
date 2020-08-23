@@ -46,47 +46,45 @@ var webAnnie = {
 		}).then(function (response) {
 			webAnnie.addToast("alert-success", "추가 성공!");
 		}).catch(function (error) {
-			let msg = "";
-			if(error.response) {
-				switch (error.response.status) {
-					case 400:
-						msg = "유효하지 않은 주소";
-						break;
-					case 500:
-						msg = "서버 내부 오류";
-						break;
-					default:
-						msg = "예기치 못한 오류 = " + error.response.status + " " + error.response.data;
-						break;
-				}
-			} else {
-				msg = "요청 중 오류";
-			}
-			webAnnie.addToast("alert-danger", "추가 오류 : " + msg);
+			webAnnie.errorToToast(error);
 		});
 	},
 	deleteTask: function(id) {
 		axios.delete("./tasks/" + String(id)).then(function (response) {
 			webAnnie.addToast("alert-success", "삭제 성공!");
 		}).catch(function (error) {
-			let msg = "";
-			if(error.response) {
-				switch (error.response.status) {
-					case 400:
-						msg = "유효하지 않은 ID";
-						break;
-					case 500:
-						msg = "서버 내부 오류";
-						break;
-					default:
-						msg = "예기치 못한 오류 = " + error.response.status + " " + error.response.data;
-						break;
-				}
-			} else {
-				msg = "요청 중 오류";
-			}
-			webAnnie.addToast("alert-danger", "삭제 오류 : " + msg);
+			webAnnie.errorToToast(error);
 		});
+	},
+	deleteCompleteTask: function() {
+		if (!confirm("완료된 모든 작업을 삭제합니까?")) {
+			return;
+		}
+		axios.delete("./tasks/complete").then(function (response) {
+			let res = response.data;
+			webAnnie.addToast("alert-success", res.count + "개 삭제 성공!");
+		}).catch(function (error) {
+			webAnnie.errorToToast(error);
+		});
+	},
+	errorToToast: function(error) {
+		let msg = "";
+		if(error.response) {
+			switch (error.response.status) {
+				case 400:
+					msg = "유효하지 않은 입력 값";
+					break;
+				case 500:
+					msg = "서버 내부 오류";
+					break;
+				default:
+					msg = "예기치 못한 오류 = " + error.response.status + " " + error.response.data;
+					break;
+			}
+		} else {
+			msg = "요청 중 오류";
+		}
+		webAnnie.addToast("alert-danger", "실패 : " + msg);
 	},
 	addToast: function (color_class, message) {
 		let i = Toasts.push({"class": color_class, "message": message, "visible": true});

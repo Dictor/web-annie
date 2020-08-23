@@ -2,8 +2,16 @@ body {
 	margin: 10px;
 }
 
-#btn-add-task {
+#app > button {
 	margin-bottom: 10px;
+}
+
+#btn-add-task {
+	width: calc(100% - 85px)
+}
+
+#btn-delete-task {
+	width: 80px;
 }
 
 .list-group-item, .list-group {
