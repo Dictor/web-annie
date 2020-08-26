@@ -16,6 +16,9 @@ var (
 	TaskId        int           = 0
 	Logger        elogrus.EchoLogger
 	CurrentConfig *Config
+	gitHash       string = "N/A"
+	gitTag        string = "N/A"
+	buildDate     string = "N/A"
 )
 
 type CustomValidator struct {
@@ -30,7 +33,8 @@ func main() {
 	e := echo.New()
 	Logger = elogrus.Attach(e)
 	e.Validator = &CustomValidator{validator: validator.New()}
-
+	Logger.Infof("web-annie %s (%s) : %s\n", gitTag, gitHash, buildDate)
+	
 	successConfig := false
 	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
 		Logger.Warnln("Cannot found config file 'config.yaml'")
