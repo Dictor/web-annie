@@ -1,10 +1,8 @@
 name: Release binary
 
-on:
-  push:
-    branches: [ release ]
-    tags:
-      - 'v*'
+on: 
+  release:
+    types: [created]
 
 jobs:
   releases-matrix:
