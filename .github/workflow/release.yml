@@ -1,0 +1,36 @@
+name: Release binary
+
+on:
+  push:
+    branches: [ release ]
+    tags:
+      - 'v*'
+
+jobs:
+  releases-matrix:
+    name: Release Go Binary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set build flag
+      run: |
+        echo ::set-env name=GIT_TAG::$( git describe --abbrev=0 )
+        echo ::set-env name=GIT_HASH::$( git rev-parse HEAD )
+        echo ::set-env name=BUILD_DATE::$( date +%F )
+        echo $GIT_TAG $GIT_HASH $BUILD_DATE
+    - uses: wangyoucao577/go-release-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        goversion: "https://dl.google.com/go/go1.14.1.linux-amd64.tar.gz"
+        binary_name: "web_annie"
+        ldflags: |
+          -X main.gitTag=${GIT_TAG}
+          -X main.gitHash=${GIT_HASH}
+          -X main.buildDate=${BUILD_DATE}
+          
