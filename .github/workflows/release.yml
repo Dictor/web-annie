@@ -28,7 +28,7 @@ jobs:
         goversion: "https://dl.google.com/go/go1.14.1.linux-amd64.tar.gz"
         binary_name: "web_annie"
         ldflags: |
-          -X main.gitTag=${GIT_TAG}
-          -X main.gitHash=${GIT_HASH}
-          -X main.buildDate=${BUILD_DATE}
+          -X main.gitTag=${{env.GIT_TAG}}
+          -X main.gitHash=${{env.GIT_HASH}}
+          -X main.buildDate=${{env.BUILD_DATE}}
           
