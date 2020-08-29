@@ -17,7 +17,7 @@ jobs:
       run: |
         echo "::set-env name=GIT_TAG::$( git describe --tags --abbrev=0 )"
         echo "::set-env name=GIT_HASH::$( git rev-parse HEAD )"
-        echo "::set-env name=BUILD_DATE::$( date +%F )"
+        echo "::set-env name=BUILD_DATE::$( date '+%F %H:%M:%S' )"
     - name: Debug Action
       uses: hmarr/debug-action@v1.0.0
     - uses: wangyoucao577/go-release-action@master
