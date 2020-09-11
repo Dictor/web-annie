@@ -33,10 +33,12 @@ body {
 
 .task-name {
 	margin-right: auto;
+	overflow-x: auto;
 }
 
 .task-name p {
 	margin-bottom: 0;
+	word-break: break-word;
 }
 
 .task-name-address {
@@ -50,7 +52,7 @@ body {
 }
 
 .task-progress {
-	width: 110px;
+	min-width: 7rem;
 }
 
 .task-progress p {
@@ -68,6 +70,7 @@ body {
 }
 
 .task-control {
+	min-width: 5.5rem;
 }
 
 .task-control button {
