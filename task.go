@@ -110,7 +110,11 @@ func (t *Task) Start() {
 		log.WriteString(exitString)
 		t.Info += exitString
 
-		t.Status = TASK_STATUS_COMPLETE
+		if !CurrentConfig.IgnoreExitError && !cmd.ProcessState.Success() {
+			t.Status = TASK_STATUS_FAIL
+		} else {
+			t.Status = TASK_STATUS_COMPLETE
+		}
 	}()
 }
 
