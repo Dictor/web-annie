@@ -1,5 +1,6 @@
 # web-annie
 **web-annie** is web interface for annie built with Golang. It can be used to simple video download manager with web interface.
+![demo](demo_video.gif?raw=true)
 
 ## Installation
 ### Docker (recommended)
