@@ -15,7 +15,7 @@ With docker-compose:
 version: "3"
   services: 
     webannie:
-      image: imdictor/web-annie
+      image: kimdictor/web-annie
       ports:
         - "8080:80"
       volumes:
