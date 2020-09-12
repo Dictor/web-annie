@@ -2,9 +2,9 @@ name: Validate commit
 
 on:
   push:
-    branches: [ master, release ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, release ]
+    branches: [ master ]
 
 jobs:
   build:
