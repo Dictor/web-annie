@@ -10,16 +10,19 @@ import (
 	"strings"
 )
 
+// TaskStatus is status indicator consisted with limited int consts
 type TaskStatus int
 
+// const for indicating each task's status
 const (
-	TASK_STATUS_QUEUED TaskStatus = iota
-	TASK_STATUS_DOWNLOADING
-	TASK_STATUS_COMPLETE
-	TASK_STATUS_FAIL
-	TASK_STATUS_CANCEL
+	TaskStatusQueued TaskStatus = iota
+	TaskStatusDownloading
+	TaskStatusComplete
+	TaskStatusFail
+	TaskStatusCancel
 )
 
+// Task is model of downloading task
 type Task struct {
 	Name        string     `json:"name"`
 	Address     string     `json:"address"`
@@ -32,6 +35,7 @@ type Task struct {
 	cancel      context.CancelFunc
 }
 
+// TaskProgress is model of task's progress detail
 type TaskProgress struct {
 	Total      string `json:"total"`
 	Current    string `json:"current"`
@@ -40,11 +44,13 @@ type TaskProgress struct {
 	TimeLeft   string `json:"time_left"`
 }
 
+// NewTask is initiator of Task struct for context assigning
 func NewTask(videoAddress string) *Task {
 	ctx, can := context.WithCancel(context.Background())
 	return &Task{Address: videoAddress, context: ctx, cancel: can}
 }
 
+// Start starts downloading
 func (t *Task) Start() {
 	go func() {
 		var (
@@ -60,10 +66,10 @@ func (t *Task) Start() {
 		}()
 
 		cmd := exec.Command("./annie", "-o", CurrentConfig.DownloadDirectory, t.Address)
-		if CurrentConfig.HttpProxy {
+		if CurrentConfig.HTTPProxy {
 			cmd.Env = append(
 				os.Environ(),
-				"HTTP_PROXY="+CurrentConfig.HttpProxyAddress,
+				"HTTP_PROXY="+CurrentConfig.HTTPProxyAddress,
 			)
 		}
 		std, _ := cmd.StdoutPipe()
@@ -71,17 +77,17 @@ func (t *Task) Start() {
 			errString := fmt.Sprintf("\n%s", err)
 			t.Info += errString
 			t.fullLog += errString
-			t.Status = TASK_STATUS_FAIL
+			t.Status = TaskStatusFail
 			return
 		}
 
-		t.Status = TASK_STATUS_DOWNLOADING
+		t.Status = TaskStatusDownloading
 		reader := bufio.NewReader(std)
 		for err == nil {
 			select {
 			case <-t.context.Done():
 				log.WriteString("\nexit because context canceled")
-				t.Status = TASK_STATUS_CANCEL
+				t.Status = TaskStatusCancel
 				return
 			default:
 			}
@@ -98,7 +104,7 @@ func (t *Task) Start() {
 			}
 
 			log.WriteString(line)
-			linenum += 1
+			linenum++
 		}
 
 		cmd.Wait()
@@ -111,19 +117,21 @@ func (t *Task) Start() {
 		t.Info += exitString
 
 		if !CurrentConfig.IgnoreExitError && !cmd.ProcessState.Success() {
-			t.Status = TASK_STATUS_FAIL
+			t.Status = TaskStatusFail
 		} else {
-			t.Status = TASK_STATUS_COMPLETE
+			t.Status = TaskStatusComplete
 		}
 	}()
 }
 
+// Stop stops (cancels) downloading
 func (t *Task) Stop() {
 	if t.cancel != nil {
 		t.cancel()
 	}
 }
 
+// ParseInfo tries parsing downloading information from annie's stdout
 func (t *Task) ParseInfo() {
 	rawInfo := strings.Trim(t.Info, " ")
 	InfoLines := strings.Split(rawInfo, "\n")
@@ -135,6 +143,7 @@ func (t *Task) ParseInfo() {
 	}
 }
 
+// ParseProgress tries parsing downloading progress from annie's stdout
 func (t *Task) ParseProgress() {
 	//pre processing
 	rawProgress := strings.Trim(t.rawProgress, " ")

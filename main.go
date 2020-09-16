@@ -1,30 +1,37 @@
 package main
 
 import (
-	elogrus "github.com/dictor/echologrus"
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
+
+	elogrus "github.com/dictor/echologrus"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
+	"gopkg.in/yaml.v2"
 )
 
 var (
-	Tasks         map[int]*Task = map[int]*Task{}
-	TaskId        int           = 0
-	Logger        elogrus.EchoLogger
+	// Tasks is storage of Task
+	Tasks map[int]*Task = map[int]*Task{}
+	// TaskID is auto-increasing counter for assign unique id to added task
+	TaskID int = 0
+	// Logger is global logger reference to Echo object's logger
+	Logger elogrus.EchoLogger
+	// CurrentConfig is global config reference
 	CurrentConfig *Config
 	gitHash       string = "N/A"
 	gitTag        string = "N/A"
 	buildDate     string = "N/A"
 )
 
+// CustomValidator is struct validator for request input
 type CustomValidator struct {
 	validator *validator.Validate
 }
 
+// Validate is just renamed function of struct validate method
 func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.validator.Struct(i)
 }
@@ -34,7 +41,7 @@ func main() {
 	Logger = elogrus.Attach(e)
 	e.Validator = &CustomValidator{validator: validator.New()}
 	Logger.Infof("web-annie %s (%s) : %s\n", gitTag, gitHash, buildDate)
-	
+
 	successConfig := false
 	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
 		Logger.Warnln("Cannot found config file 'config.yaml'")
@@ -75,15 +82,15 @@ func main() {
 			return c.NoContent(http.StatusBadRequest)
 		}
 
-		Tasks[TaskId] = NewTask(task.Address)
-		Tasks[TaskId].Start()
-		TaskId += 1
+		Tasks[TaskID] = NewTask(task.Address)
+		Tasks[TaskID].Start()
+		TaskID++
 		return c.NoContent(http.StatusOK)
 	})
 	e.DELETE("/tasks/:id", func(c echo.Context) error {
-		reqId := c.Param("id")
-		if reqId != "complete" {
-			id, err := strconv.Atoi(reqId)
+		reqID := c.Param("id")
+		if reqID != "complete" {
+			id, err := strconv.Atoi(reqID)
 			if err != nil {
 				e.Logger.Info(err)
 				return c.NoContent(http.StatusBadRequest)
@@ -99,10 +106,10 @@ func main() {
 		} else {
 			deleteCnt := 0
 			for i, task := range Tasks {
-				if task.Status == TASK_STATUS_COMPLETE {
+				if task.Status == TaskStatusComplete {
 					task.Stop()
 					delete(Tasks, i)
-					deleteCnt += 1
+					deleteCnt++
 				}
 			}
 			return c.JSON(http.StatusOK, map[string]int{"count": deleteCnt})

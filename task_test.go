@@ -6,14 +6,14 @@ import (
 )
 
 func TestParseProgress(t *testing.T) {
-	TEST_INPUT := []string{
+	TestInput := []string{
 		" 80.00 KiB / 4.44 MiB [==>-------------------------------------------------------------------------------------------------------------------------------]   1.76% 139.10 KiB/s 00m31s",
 		" 0 B / 4.44 MiB [------------------------------------------------------------------------------------------------------------------------------------------------------------]   0.00%",
 		" 4.31 MiB / 4.44 MiB [========================================================================================================================================>---]  97.20% 3.58 MiB/s",
 		"Merging video parts into Nature Beautiful short video 720p HD.mp4",
 	}
 
-	for _, input := range TEST_INPUT {
+	for _, input := range TestInput {
 		task := &Task{rawProgress: input}
 		task.ParseProgress()
 		fmt.Printf("%+v\n", task.Progress)
