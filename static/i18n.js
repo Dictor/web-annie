@@ -23,9 +23,26 @@ const i18nText = {
     },
     en: {
       message: {
-        hello: 'こんにちは、世界'
+        timeLeft: "Left",
+        statusWait: "Waiting",
+        statusProgress: "Progressing",
+        statusComplete: "Complete",
+        statusFail: "Failed",
+        statusCancel: "Canceled",
+        confirmDeleteTask: "Do you really want to delete {name} ({address}) task?",
+        errorRefreshTask: "Refreshing error : {msg}",
+        promptTaskAddress: "Input video address for adding",
+        infoAddSuccess: "Added successfully!",
+        infoDeleteSuccess: "Deleted successfully!",
+        confirmDeleteCompletedTask: "Do you want to delete whole completed tasks?",
+        infoDeleteCompletedTask: "{count} tasks deleted successfully!",
+        error400: "Invalid input",
+        error500: "Internal server error",
+        errorUnknown: "Unexpected error = {status} {data}",
+        errorRequest: "Error caused during requesting", 
+        errorGeneral: "Failure : {msg}"
       }
-    }
+    },
   }
 
 const i18n = new VueI18n({
