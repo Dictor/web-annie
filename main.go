@@ -68,6 +68,7 @@ func main() {
 	e.File("/", "static/index.html")
 	e.File("/style", "static/style.css")
 	e.File("/script", "static/script.js")
+	e.File("/i18n", "static/i18n.js")
 	e.GET("/tasks", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, Tasks)
 	})

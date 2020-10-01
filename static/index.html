@@ -8,12 +8,14 @@
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.1/js/bootstrap.min.js" integrity="sha384-XEerZL0cuoUbHE4nZReLT7nx9gQrQreJekYhJD9WNWhH8nEW+0c5qq7aIo2Wl30J" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+		<script src="https://unpkg.com/vue-i18n/dist/vue-i18n.js"></script>
 		<script src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
 		<link rel="stylesheet" href="./style">
         <title>web-annie</title>
     </head>
     <body>
+		<script src="./i18n"></script>
 		<script src="./script"></script>
         <div id="app">
             <button id="btn-add-task" type="button" class="btn btn-success btn-lg" onclick="javascript:webAnnie.addTask()">+</button>
@@ -27,9 +29,9 @@
 						<p class="task-name-size" v-if="task.progress">{{ task.progress.current }} / {{ task.progress.total }} ({{ task.progress.speed }})</p>
 					</div>
 					<div class="task-progress">
-						<p class="task-progress-status" v-bind:style="{color: taskStatusColor[task.status]}">{{ taskStatus[task.status] }}</p>
+						<p class="task-progress-status" v-bind:style="{color: taskStatusColor[task.status]}">{{ getTaskStatusMessage(task.status) }}</p>
 						<p class="task-progress-percentage" v-if="task.progress">{{ task.progress.percentage }}</p>
-						<p class="task-progress-time" v-if="task.progress">{{ task.progress.time_left }} 남음</p>
+						<p class="task-progress-time" v-if="task.progress">{{ task.progress.time_left }} {{ $t("text.time_left") }}</p>
 					</div>
 					<div class="task-control">
 						<button type="button" class="btn btn-danger" v-on:click="deleteTask(task)"><i class="fas fa-trash-alt"></i></button>

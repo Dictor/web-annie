@@ -4,10 +4,10 @@ let App = {};
 
 window.onload = function () { 
 	App = new Vue({
+	  i18n: i18n,
 	  el: '#app',
 	  data: {
 		  tasks: Tasks,
-		  taskStatus: ["대기", "진행", "완료", "실패", "취소"],
 		  taskStatusColor: ["gray", "deepskyblue", "green", "red", "yellow"],
 		  toasts: Toasts
 	  },
@@ -16,12 +16,17 @@ window.onload = function () {
 			  alert(m);
 		  },
 		  deleteTask: function(task) {
-			  if (confirm(task.name + " (" + task.address + ") 작업을 삭제합니까?")) {
+			if (confirm(i18n.t("message.confirmDeleteTask", {"name": task.name, "address": task.address}))) {
 			  	webAnnie.deleteTask(task.id);
 			  }
-		  }
+		  },
+		  getTaskStatusMessage: function(status) {
+			const task_status = ["message.statusWait", "message.statusProgress", "message.statusComplete", "message.statusFail", "message.statusCancel"];
+			return i18n.t(task_status[status]);
+		  },
 	  }
 	});
+
 	setInterval(function() {
 		axios.get("./tasks").then(function (response) {
 			let t = response.data;
@@ -33,36 +38,35 @@ window.onload = function () {
 				i++;
 			}
 		}).catch(function (error) {
-			webAnnie.addToast("alert-danger", "갱신 오류 : " + error.message)
+			webAnnie.addToast("alert-danger", i18n.t("message.errorRefreshTask", {"msg": error.message}));
 		});
-	}, 1000)
-
+	}, 1000);
 };
 
 var webAnnie = {
 	addTask: function() {
 		axios.post("./tasks", {
-			address: prompt('추가할 동영상의 주소를 입력하세요.')
+			address: prompt(i18n.t("message.promptTaskAddress"))
 		}).then(function (response) {
-			webAnnie.addToast("alert-success", "추가 성공!");
+			webAnnie.addToast("alert-success", i18n.t("message.infoAddSuccess"));
 		}).catch(function (error) {
 			webAnnie.errorToToast(error);
 		});
 	},
 	deleteTask: function(id) {
 		axios.delete("./tasks/" + String(id)).then(function (response) {
-			webAnnie.addToast("alert-success", "삭제 성공!");
+			webAnnie.addToast("alert-success", i18n.t("message.infoDeleteSuccess"));
 		}).catch(function (error) {
 			webAnnie.errorToToast(error);
 		});
 	},
 	deleteCompleteTask: function() {
-		if (!confirm("완료된 모든 작업을 삭제합니까?")) {
+		if (!confirm(i18n.t("message.confirmDeleteCompletedTask"))) {
 			return;
 		}
 		axios.delete("./tasks/complete").then(function (response) {
 			let res = response.data;
-			webAnnie.addToast("alert-success", res.count + "개 삭제 성공!");
+			webAnnie.addToast("alert-success", i18n.t("message.infoDeleteCompletedTask", {"count": res.count}));
 		}).catch(function (error) {
 			webAnnie.errorToToast(error);
 		});
@@ -72,19 +76,19 @@ var webAnnie = {
 		if(error.response) {
 			switch (error.response.status) {
 				case 400:
-					msg = "유효하지 않은 입력 값";
+					msg = i18n.t("message.error400");
 					break;
 				case 500:
-					msg = "서버 내부 오류";
+					msg = i18n.t("message.error500");
 					break;
 				default:
-					msg = "예기치 못한 오류 = " + error.response.status + " " + error.response.data;
+					msg = i18n.t("message.errorUnknown", {"status": error.response.status,"data": error.response.data});
 					break;
 			}
 		} else {
 			msg = "요청 중 오류";
 		}
-		webAnnie.addToast("alert-danger", "실패 : " + msg);
+		webAnnie.addToast("alert-danger", i18n.t("message.errorGeneral", {"msg": msg}));
 	},
 	addToast: function (color_class, message) {
 		let i = Toasts.push({"class": color_class, "message": message, "visible": true});
