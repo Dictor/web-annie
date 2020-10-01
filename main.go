@@ -116,5 +116,8 @@ func main() {
 			return c.JSON(http.StatusOK, map[string]int{"count": deleteCnt})
 		}
 	})
+	e.GET("/version", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]string{"tag": gitTag, "date": buildDate})
+	})
 	e.Logger.Fatal(e.Start(CurrentConfig.ListenAddress))
 }

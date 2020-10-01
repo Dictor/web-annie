@@ -92,3 +92,7 @@ body {
 	right: 10px;
 }
 
+.version {
+	text-align: center;
+    color: gray;
+}

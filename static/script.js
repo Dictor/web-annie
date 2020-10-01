@@ -7,6 +7,7 @@ window.onload = function () {
 	  i18n: i18n,
 	  el: '#app',
 	  data: {
+		  version: "",
 		  tasks: Tasks,
 		  taskStatusColor: ["gray", "deepskyblue", "green", "red", "yellow"],
 		  toasts: Toasts
@@ -41,6 +42,9 @@ window.onload = function () {
 			webAnnie.addToast("alert-danger", i18n.t("message.errorRefreshTask", {"msg": error.message}));
 		});
 	}, 1000);
+	axios.get("./version").then(function (response) {
+		App.version = response.data.tag + " (" + response.data.date +  ")";
+	});
 };
 
 var webAnnie = {

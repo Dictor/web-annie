@@ -38,7 +38,8 @@
 						<button type="button" class="btn btn-primary" v-on:click="alert(task.info)"><i class="fas fa-info"></i></button>
 					</div>
                 </a>
-            </div>
+			</div>
+			<p class="version">web-annie {{ version }}</p>
 			<div id="toast-wrapper">
 				<div v-for="(toast, index) in toasts">
 					<div class="alert" v-bind:class="toast.class" v-if="toast.visible" role="alert">
