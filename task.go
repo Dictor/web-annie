@@ -65,7 +65,7 @@ func (t *Task) Start() {
 			t.fullLog = log.String()
 		}()
 
-		cmd := exec.Command("./annie", "-o", CurrentConfig.DownloadDirectory, t.Address)
+		cmd := exec.Command("./lux", "-o", CurrentConfig.DownloadDirectory, t.Address)
 		if CurrentConfig.HTTPProxy {
 			cmd.Env = append(
 				os.Environ(),
@@ -153,34 +153,38 @@ func (t *Task) ParseProgress() {
 	tp := TaskProgress{}
 
 	var (
-		slashAppear bool           = false
-		digitReg    *regexp.Regexp = regexp.MustCompile("[0-9]+")
+		digitReg       *regexp.Regexp = regexp.MustCompile("[0-9]+")
+		digitWordCount int
+		validProgress  bool = true
 	)
-	for i := 0; i < len(raw); i++ {
-		if strings.Contains(raw[i], "/s") {
-			if len(digitReg.FindAllString(raw[i-1], -1)) > 0 {
-				tp.Speed = raw[i-1] + " " + raw[i]
-			}
-		} else if strings.ContainsAny(raw[i], "hms") {
-			if len(digitReg.FindAllString(raw[i], -1)) > 0 && !strings.Contains(raw[i], "\n") && len(raw[i]) < 12 {
-				tp.TimeLeft = raw[i]
-			}
-		} else if strings.Contains(raw[i], "B") {
-			if slashAppear {
-				if len(digitReg.FindAllString(raw[i-1], -1)) > 0 {
-					tp.Total = raw[i-1] + " " + raw[i]
-				}
-			} else {
-				if len(digitReg.FindAllString(raw[i-1], -1)) > 0 {
-					slashAppear = true
-					tp.Current = raw[i-1] + " " + raw[i]
-				}
-			}
-		} else if strings.Contains(raw[i], "%") {
-			if len(digitReg.FindAllString(raw[i], -1)) > 0 {
-				tp.Percentage = raw[i]
-			}
+
+	if len(raw) != 11 {
+		validProgress = false
+	}
+
+	for _, r := range raw {
+		if len(digitReg.FindAllString(r, -1)) > 0 {
+			digitWordCount++
 		}
 	}
+	if digitWordCount < 5 {
+		print(digitWordCount)
+		validProgress = false
+	}
+
+	if validProgress {
+		tp.Current = raw[0] + raw[1]
+		tp.Percentage = raw[9]
+		tp.Speed = raw[6] + raw[7]
+		tp.TimeLeft = raw[10]
+		tp.Total = raw[3] + raw[4]
+	} else {
+		tp.Current = "?"
+		tp.Percentage = "?"
+		tp.Speed = "?"
+		tp.TimeLeft = "?"
+		tp.Total = "?"
+	}
+
 	t.Progress = &tp
 }
