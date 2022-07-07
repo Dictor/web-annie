@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // TaskStatus is status indicator consisted with limited int consts
@@ -64,6 +66,7 @@ func (t *Task) Start() {
 		defer func() {
 			t.fullLog = log.String()
 		}()
+		Logger.Infof("task start, task context: %+v", t)
 
 		cmd := exec.Command("./lux", "-o", CurrentConfig.DownloadDirectory, t.Address)
 		if CurrentConfig.HTTPProxy {
@@ -78,6 +81,7 @@ func (t *Task) Start() {
 			t.Info += errString
 			t.fullLog += errString
 			t.Status = TaskStatusFail
+			Logger.Infof("task failed, err = %s, task context: %+v", err, t)
 			return
 		}
 
@@ -87,6 +91,7 @@ func (t *Task) Start() {
 			select {
 			case <-t.context.Done():
 				log.WriteString("\nexit because context canceled")
+				Logger.Infof("task halted, exit because context canceled, task context: %+v", err, t)
 				t.Status = TaskStatusCancel
 				return
 			default:
@@ -104,6 +109,10 @@ func (t *Task) Start() {
 			}
 
 			log.WriteString(line)
+			Logger.WithFields(logrus.Fields{
+				"output": line,
+				"task":   t,
+			}).Debugln("lux output")
 			linenum++
 		}
 
@@ -121,6 +130,11 @@ func (t *Task) Start() {
 		} else {
 			t.Status = TaskStatusComplete
 		}
+
+		Logger.WithFields(logrus.Fields{
+			"output": line,
+			"task":   t,
+		}).Debugln("end task")
 	}()
 }
 
